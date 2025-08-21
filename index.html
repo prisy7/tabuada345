@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Tabuada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2575fc;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        #start-screen {
+            display: block;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to right, #f5af19, #f12711);
+        }
+        
+        .question {
+            font-size: 2.5rem;
+            margin: 25px 0;
+            color: #2575fc;
+            font-weight: bold;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .option {
+            background-color: #f1f8ff;
+            border: 2px solid #2575fc;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .option:hover {
+            background-color: #d6eaff;
+            transform: scale(1.03);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .score {
+            color: #6a11cb;
+        }
+        
+        .level {
+            color: #f12711;
+        }
+        
+        .timer {
+            color: #00b09b;
+        }
+        
+        .feedback {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        
+        .correct {
+            color: #00b09b;
+        }
+        
+        .incorrect {
+            color: #f12711;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .result {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            color: #6a11cb;
+        }
+        
+        .celebrate {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela inicial -->
+        <div id="start-screen" class="screen">
+            <h1>Jogo da Tabuada</h1>
+            <p>Pratique a tabuada do 2 ao 5 de forma divertida!</p>
+            <p>Complete 3 fases com dificuldade crescente e ganhe pontos a cada acerto.</p>
+            <p>Você terá 30 segundos por fase. Prepare-se!</p>
+            <button id="start-btn" class="btn">Começar Jogo</button>
+        </div>
+        
+        <!-- Tela de jogo -->
+        <div id="game-screen" class="screen">
+            <div class="stats">
+                <div class="score">Pontos: <span id="score">0</span></div>
+                <div class="level">Fase: <span id="level">1</span></div>
+                <div class="timer">Tempo: <span id="time">30</span>s</div>
+            </div>
+            <div class="progress-bar">
+                <div id="progress" class="progress"></div>
+            </div>
+            <div id="question" class="question">2 x 3 = ?</div>
+            <div class="options">
+                <div class="option" data-value="0">6</div>
+                <div class="option" data-value="1">7</div>
+                <div class="option" data-value="2">8</div>
+                <div class="option" data-value="3">9</div>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <button id="next-btn" class="btn" style="display: none;">Próxima Pergunta</button>
+        </div>
+        
+        <!-- Tela de resultados -->
+        <div id="result-screen" class="screen">
+            <h1>Parabéns!</h1>
+            <div class="celebrate">🎉</div>
+            <div class="result">Você completou o jogo!</div>
+            <p>Sua pontuação final: <span id="final-score" class="score">0</span> pontos</p>
+            <p>Respostas corretas: <span id="correct-answers">0</span>/<span id="total-questions">0</span></p>
+            <button id="restart-btn" class="btn">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        // Elementos do DOM
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionElement = document.getElementById('question');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const timeElement = document.getElementById('time');
+        const feedbackElement = document.getElementById('feedback');
+        const finalScoreElement = document.getElementById('final-score');
+        const correctAnswersElement = document.getElementById('correct-answers');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const progressBar = document.getElementById('progress');
+        const options = document.querySelectorAll('.option');
+        
+        // Variáveis do jogo
+        let currentLevel = 1;
+        let score = 0;
+        let correctAnswers = 0;
+        let totalQuestions = 0;
+        let timeLeft = 30;
+        let timer;
+        let currentQuestion;
+        let questionsAnswered = 0;
+        let questionsPerLevel = 5;
+        
+        // Iniciar o jogo
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        
+        // Adicionar event listeners às opções de resposta
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                checkAnswer(parseInt(option.dataset.value));
+            });
+        });
+        
+        nextBtn.addEventListener('click', nextQuestion);
+        
+        function startGame() {
+            // Reiniciar variáveis do jogo
+            currentLevel = 1;
+            score = 0;
+            correctAnswers = 0;
+            totalQuestions = 0;
+            questionsAnswered = 0;
+            
+            // Atualizar a interface
+            scoreElement.textContent = score;
+            levelElement.textContent = currentLevel;
+            progressBar.style.width = '0%';
+            
+            // Mostrar tela de jogo e esconder outras
+            startScreen.style.display = 'none';
+            resultScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            
+            // Iniciar a primeira pergunta
+            nextQuestion();
+            startTimer();
+        }
+        
+        function nextQuestion() {
+            // Esconder feedback e próximo botão
+            feedbackElement.textContent = '';
+            feedbackElement.className = 'feedback';
+            nextBtn.style.display = 'none';
+            
+            // Gerar nova pergunta baseada no nível atual
+            currentQuestion = generateQuestion(currentLevel);
+            questionElement.textContent = currentQuestion.text;
+            
+            // Mostrar opções de resposta
+            options.forEach((option, index) => {
+                option.textContent = currentQuestion.options[index];
+                option.style.pointerEvents = 'auto';
+                option.style.backgroundColor = '#f1f8ff';
+                option.style.borderColor = '#2575fc';
+            });
+            
+            questionsAnswered++;
+            totalQuestions++;
+            updateProgressBar();
+        }
+        
+        function generateQuestion(level) {
+            let num1, num2, correctAnswer;
+            
+            switch(level) {
+                case 1:
+                    // Fase 1: Tabuada do 2 e 3
+                    num1 = Math.floor(Math.random() * 2) + 2; // 2 ou 3
+                    num2 = Math.floor(Math.random() * 10) + 1; // 1 a 10
+                    break;
+                case 2:
+                    // Fase 2: Tabuada do 4
+                    num1 = 4;
+                    num2 = Math.floor(Math.random() * 10) + 1; // 1 a 10
+                    break;
+                case 3:
+                    // Fase 3: Tabuada do 5
+                    num1 = 5;
+                    num2 = Math.floor(Math.random() * 10) + 1; // 1 a 10
+                    break;
+            }
+            
+            correctAnswer = num1 * num2;
+            
+            // Gerar opções de resposta
+            let options = [correctAnswer];
+            
+            // Adicionar respostas incorretas próximas à correta
+            while (options.length < 4) {
+                // Gerar um valor próximo ao correto, mas não igual
+                let offset = Math.floor(Math.random() * 5) + 1;
+                if (Math.random() > 0.5) offset = -offset;
+                
+                let wrongAnswer = correctAnswer + offset;
+                
+                // Garantir que não seja negativo e não seja repetido
+                if (wrongAnswer > 0 && !options.includes(wrongAnswer)) {
+                    options.push(wrongAnswer);
+                }
+            }
+            
+            // Embaralhar opções
+            options = shuffleArray(options);
+            
+            return {
+                text: `${num1} x ${num2} = ?`,
+                answer: correctAnswer,
+                options: options
+            };
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function checkAnswer(selectedIndex) {
+            const selectedValue = parseInt(currentQuestion.options[selectedIndex]);
+            const isCorrect = selectedValue === currentQuestion.answer;
+            
+            // Desabilitar cliques nas opções
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            if (isCorrect) {
+                // Resposta correta
+                feedbackElement.textContent = 'Correto! 🎉';
+                feedbackElement.className = 'feedback correct';
+                options[selectedIndex].style.backgroundColor = '#d4edda';
+                options[selectedIndex].style.borderColor = '#28a745';
+                
+                // Atualizar pontuação
+                score += currentLevel * 10; // Mais pontos em níveis mais altos
+                scoreElement.textContent = score;
+                correctAnswers++;
+            } else {
+                // Resposta incorreta
+                feedbackElement.textContent = `Incorreto! A resposta era ${currentQuestion.answer}.`;
+                feedbackElement.className = 'feedback incorrect';
+                options[selectedIndex].style.backgroundColor = '#f8d7da';
+                options[selectedIndex].style.borderColor = '#dc3545';
+                
+                // Destacar a resposta correta
+                const correctIndex = currentQuestion.options.indexOf(currentQuestion.answer);
+                options[correctIndex].style.backgroundColor = '#d4edda';
+                options[correctIndex].style.borderColor = '#28a745';
+            }
+            
+            // Mostrar botão para próxima pergunta
+            nextBtn.style.display = 'block';
+            
+            // Verificar se completou o nível atual
+            if (questionsAnswered >= questionsPerLevel) {
+                if (currentLevel < 3) {
+                    // Avançar para o próximo nível
+                    currentLevel++;
+                    levelElement.textContent = currentLevel;
+                    questionsAnswered = 0;
+                    
+                    // Atualizar o temporizador para o novo nível
+                    clearInterval(timer);
+                    timeLeft = 30;
+                    timeElement.textContent = timeLeft;
+                    startTimer();
+                } else {
+                    // Completou todos os níveis - fim de jogo
+                    clearInterval(timer);
+                    setTimeout(endGame, 1000);
+                }
+            }
+        }
+        
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            timeElement.textContent = timeLeft;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (currentLevel < 3) {
+                        // Avançar para o próximo nível por tempo esgotado
+                        currentLevel++;
+                        levelElement.textContent = currentLevel;
+                        questionsAnswered = 0;
+                        nextQuestion();
+                        startTimer();
+                    } else {
+                        // Fim de jogo por tempo esgotado
+                        endGame();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function updateProgressBar() {
+            const progress = (questionsAnswered / questionsPerLevel) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        function endGame() {
+            // Mostrar tela de resultados
+            gameScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            
+            // Atualizar estatísticas finais
+            finalScoreElement.textContent = score;
+            correctAnswersElement.textContent = correctAnswers;
+            totalQuestionsElement.textContent = totalQuestions;
+        }
+    </script>
+</body>
+</html>
